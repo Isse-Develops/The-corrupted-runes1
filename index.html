@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Corrupted Runes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            background: #000;
+            color: #c9b896;
+            font-family: 'Times New Roman', Times, serif;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+        }
+
+        #main-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center bottom, #1a120b 0%, #0a0805 40%, #000000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .game-title {
+            font-size: clamp(2.2rem, 8vw, 4.2rem);
+            font-weight: bold;
+            color: #e8a020;
+            text-shadow: 0 0 10px #ff6600, 0 0 30px #ff4400, 2px 2px 0 #000;
+            letter-spacing: 6px;
+            margin-bottom: 8px;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        .game-subtitle {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            color: #aa7744;
+            letter-spacing: 4px;
+            margin-bottom: 50px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            width: 100%;
+            max-width: 360px;
+            padding: 0 20px;
+        }
+
+        .d2-btn {
+            width: 100%;
+            padding: 14px 0;
+            background: linear-gradient(to bottom, #3a2a1a 0%, #1f150c 100%);
+            border: 2px solid #8b6914;
+            color: #d4b56a;
+            font-size: 1.15rem;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-align: center;
+            text-shadow: 1px 1px 2px #000;
+            transition: all 0.15s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .d2-btn:hover, .d2-btn:active {
+            background: linear-gradient(to bottom, #5a3f20 0%, #2a1c0e 100%);
+            border-color: #c9a227;
+            color: #ffe08a;
+        }
+
+        #character-select {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a120b 0%, #000 80%);
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+            z-index: 90;
+            overflow-y: auto;
+        }
+
+        #character-select h2 {
+            font-size: clamp(1.6rem, 5vw, 2.5rem);
+            color: #e8a020;
+            margin-bottom: 30px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px #ff6600;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        .characters {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 0 15px 40px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .char-card {
+            width: 100%;
+            max-width: 260px;
+            background: linear-gradient(to bottom, #2a1f14, #150f0a);
+            border: 2px solid #8b6914;
+            padding: 25px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .char-card:hover, .char-card:active {
+            border-color: #e8a020;
+            box-shadow: 0 0 20px rgba(232, 160, 32, 0.45);
+            transform: translateY(-6px);
+        }
+
+        .char-card h3 {
+            color: #e8a020;
+            font-size: 1.35rem;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+
+        .char-card p {
+            color: #bba57a;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        #game-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0d0a07;
+        }
+
+        #server-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: clamp(0.95rem, 3vw, 1.15rem);
+            color: #e8a020;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px #000;
+        }
+
+        #hud {
+            position: absolute;
+            bottom: 25px;
+            left: 20px;
+            right: 20px;
+            max-width: 360px;
+        }
+
+        .bar-container {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .bar-label {
+            font-size: 0.85rem;
+            color: #c9b896;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+        }
+
+        .bar {
+            height: 22px;
+            background: #1a120b;
+            border: 2px solid #5a3f20;
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        #health-fill {
+            background: linear-gradient(to right, #8b0000, #ff2222);
+            width: 100%;
+        }
+
+        #makro-fill {
+            background: linear-gradient(to right, #0033aa, #3388ff);
+            width: 100%;
+        }
+
+        #message-box {
+            position: absolute;
+            top: 42%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 8, 5, 0.94);
+            border: 2px solid #8b6914;
+            padding: 22px 30px;
+            font-size: clamp(1.1rem, 4vw, 1.5rem);
+            color: #e8a020;
+            display: none;
+            z-index: 200;
+            text-align: center;
+            letter-spacing: 2px;
+            width: 90%;
+            max-width: 420px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: transparent;
+            border: 1px solid #8b6914;
+            color: #c9b896;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+
+        .back-btn:hover, .back-btn:active {
+            border-color: #e8a020;
+            color: #e8a020;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-menu">
+        <div class="game-title">THE CORRUPTED RUNES</div>
+        <div class="game-subtitle">A DARK ROBLOX LEGEND</div>
+
+        <div class="menu-buttons">
+            <button class="d2-btn" id="btn-start">SINGLE PLAYER</button>
+            <button class="d2-btn" id="btn-load">LOAD GAME</button>
+            <button class="d2-btn" id="btn-credits">CREDITS</button>
+            <button class="d2-btn" id="btn-exit">EXIT</button>
+        </div>
+    </div>
+
+    <div id="character-select">
+        <button class="back-btn" id="btn-back-char">← BACK</button>
+        <h2>CHOOSE YOUR CHARACTER</h2>
+        <div class="characters">
+            <div class="char-card" data-char="banned">
+                <h3>The Banned One</h3>
+                <p>Can spawn Defenders that attack enemies for you.<br>Defenders can level up.</p>
+            </div>
+            <div class="char-card" data-char="destroyer">
+                <h3>The Destroyer</h3>
+                <p>Shoots Thunder from his knuckles.<br>Massive damage on Master Hits.</p>
+            </div>
+            <div class="char-card" data-char="glitch">
+                <h3>The Glitch Walker</h3>
+                <p>Can phase through enemies.<br>Leaves a damaging glitch trail.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen">
+        <div id="server-info">SERVER I — THE CORRUPTED DESERT</div>
+        <div id="hud">
+            <div class="bar-container">
+                <div class="bar-label">HEALTH</div>
+                <div class="bar"><div class="bar-fill" id="health-fill"></div></div>
+            </div>
+            <div class="bar-container">
+                <div class="bar-label">MAKRO</div>
+                <div class="bar"><div class="bar-fill" id="makro-fill"></div></div>
+            </div>
+        </div>
+        <div id="message-box"></div>
+    </div>
+
+    <script>
+        function $(id) {
+            return document.getElementById(id);
+        }
+
+        const mainMenu = $('main-menu');
+        const charSelect = $('character-select');
+        const gameScreen = $('game-screen');
+        const messageBox = $('message-box');
+
+        function onTap(element, callback) {
+            if (!element) return;
+            element.addEventListener('click', callback);
+            element.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                callback();
+            }, { passive: false });
+        }
+
+        onTap($('btn-start'), function() {
+            mainMenu.style.display = 'none';
+            charSelect.style.display = 'flex';
+        });
+
+        onTap($('btn-load'), function() {
+            alert('Load Game coming soon');
+        });
+
+        onTap($('btn-credits'), function() {
+            alert('Credits coming soon');
+        });
+
+        onTap($('btn-exit'), function() {
+            alert('Thanks for playing The Corrupted Runes!');
+        });
+
+        onTap($('btn-back-char'), function() {
+            charSelect.style.display = 'none';
+            mainMenu.style.display = 'flex';
+        });
+
+        document.querySelectorAll('.char-card').forEach(function(card) {
+            onTap(card, function() {
+                const char = card.getAttribute('data-char');
+                startGame(char);
+            });
+        });
+
+        function startGame(character) {
+            charSelect.style.display = 'none';
+            gameScreen.style.display = 'block';
+            showMessage('Entering Dustfall Camp');
+        }
+
+        function showMessage(text) {
+            messageBox.innerText = text;
+            messageBox.style.display = 'block';
+            setTimeout(function() {
+                messageBox.style.display = 'none';
+            }, 2800);
+        }
+    </script>
+</body>
+</html>
